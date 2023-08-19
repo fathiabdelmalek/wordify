@@ -82,14 +82,14 @@ class Converter:
         self._position += 1
         return res
 
-    def set_number(self, new_number):
+    def set_number(self, number):
         """
         Sets a new numerical value for conversion.
         :param new_number: The new numerical value.
         """
         if not isinstance(number, int) and not isinstance(number, str):
             raise ValueError("Invalid input. Number must be an integer or a string.")
-        self.original_number = str(new_number)
+        self.original_number = str(number)
         self.padded_number = self._pad_number()
         self._position = 0
 
@@ -103,16 +103,3 @@ class Converter:
             group = self.padded_number[i:i + 3]
             result = self._convert_group_to_word(group) + result
         return result[:-6]
-
-
-if __name__ == "__main__":
-    import sys
-    if len(sys.argv) >= 2:
-        number = str(sys.argv[1])
-    else:
-        number = str(input("Enter a number "))
-    try:
-        converter = Converter(number)
-        print(converter.convert())
-    except ValueError as error:
-        print(error)
