@@ -1,9 +1,9 @@
 class Converter:
     """
-    A class for converting numbers to words.
+    A class for converting numerical values into their English word representation.
     """
 
-    _number_names = [
+    _position_names = [
         "", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion", "sextillion",
         "septillion", "octillion", "nonillion", "decillion", "un-decillion", "duo-decillion",
         "tre-decillion", "quattuor-decillion", "quin-decillion", "sex-decillion", "septen-decillion",
@@ -31,124 +31,72 @@ class Converter:
         "septen-nonagintillion", "octo-nonagintillion", "novem-nonagintillion", "centillion"
     ]
 
-    _ones_names = {
+    _names = {
         '9': 'nine', '8': 'eight', '7': 'seven', '6': 'six', '5': 'five',
         '4': 'four', '3': 'three', '2': 'two', '1': 'one', '0': '',
-    }
-
-    _tens_names = {
-        '9': 'ninety', '8': 'eighty', '7': 'seventy', '6': 'sixty', '5': 'fifty',
-        '4': 'forty', '3': 'thirty', '2': 'twenty', '0': '',
-    }
-
-    _tens_of_ten_names = {
         '19': 'nineteen', '18': 'eighteen', '17': 'seventeen', '16': 'sixteen',
         '15': 'fifteen', '14': 'fourteen', '13': 'thirteen', '12': 'twelve',
         '11': 'eleven', '10': 'ten',
+        '90': 'ninety', '80': 'eighty', '70': 'seventy', '60': 'sixty', '50': 'fifty',
+        '40': 'forty', '30': 'thirty', '20': 'twenty', '0': '',
     }
 
-    def __init__(self, number):
+    def __init__(self, number=0):
         """
-        Initialize the Converter with a number.
-
-        Args:
-            number (str): The number to be converted.
+        Initializes the OptimizedConverter instance with a given number.
+        :param number: The numerical value to be converted.
         """
-        self.original_number = number
+        if not isinstance(number, int) and not isinstance(number, str):
+            raise ValueError("Invalid input. Number must be an integer or a string.")
+        self.original_number = str(number)
         self.padded_number = self._pad_number()
         self._position = 0
 
     def _pad_number(self):
         """
-        Pad the number with zeros to make its length divisible by 3.
-
-        Returns:
-            str: The padded number.
+        Pads the original number with leading zeros to ensure groups of three digits.
+        :return: The padded number.
         """
+        if not self.original_number.isdigit():
+            raise ValueError("Invalid input. Number must contain only digits.")
         padding = (3 - len(self.original_number) % 3) % 3
         return '0' * padding + self.original_number
 
-    def _convert_ones(self, digit):
-        """
-        Convert a single-digit number to its corresponding word.
-
-        Args:
-            digit (str): The single-digit number to be converted.
-
-        Returns:
-            str: The word representation of the number.
-        """
-        return self._ones_names.get(digit, "Invalid Input")
-
-    def _convert_tens(self, digit):
-        """
-        Convert a tens place digit to its corresponding word.
-
-        Args:
-            digit (str): The tens place digit to be converted.
-
-        Returns:
-            str: The word representation of the number.
-        """
-        return self._tens_names.get(digit, "Invalid Input")
-
-    def _convert_tens_of_ten(self, number):
-        """
-        Convert a number in the tens-of-ten range (10-19) to its corresponding word.
-
-        Args:
-            number (str): The number in the tens-of-ten range to be converted.
-
-        Returns:
-            str: The word representation of the number.
-        """
-        return self._tens_of_ten_names.get(number, "Invalid Input")
-
     def _convert_group_to_word(self, group):
         """
-        Convert a group of three digits to its corresponding word representation.
-
-        Args:
-            group (str): The group of three digits to be converted.
-
-        Returns:
-            str: The word representation of the group.
+        Converts a three-digit group into its English word representation.
+        :param group: The three-digit group.
+        :return: The English word representation of the group.
         """
         res = ""
         if group[0] != '0':
-            res += self._convert_ones(group[0]) + " hundred "
+            res += f"{self._names[group[0]]} hundred "
         if group[1] != '0':
             if group[1] != '1':
-                res += self._convert_tens(group[1]) + " "
-                res += self._convert_ones(group[2]) + " "
+                res += f"{self._names[group[1]+'0']} {self._names[group[2]]} "
             else:
-                res += self._convert_tens_of_ten(f"{group[1]}{group[2]}") + " "
+                res += f"{self._names[group[1]+group[2]]} "
         else:
-            res += self._convert_ones(group[2]) + " "
-        res += f"{self._number_names[self._position]} and "
+            res += f"{self._names[group[2]]} "
+        res += f"{self._position_names[self._position]} and "
         self._position += 1
         return res
 
     def set_number(self, new_number):
         """
-        Sets a new number for conversion.
-
-        Args:
-            new_number (str): The new number to be converted.
-
-        Returns:
-            None
+        Sets a new numerical value for conversion.
+        :param new_number: The new numerical value.
         """
-        self.original_number = new_number
+        if not isinstance(number, int) and not isinstance(number, str):
+            raise ValueError("Invalid input. Number must be an integer or a string.")
+        self.original_number = str(new_number)
         self.padded_number = self._pad_number()
         self._position = 0
 
     def convert(self):
         """
-        Convert the number to its word representation.
-
-        Returns:
-            str: The word representation of the number.
+        Converts the numerical value into its English word representation.
+        :return: The English word representation of the numerical value.
         """
         result = ""
         for i in range(len(self.padded_number) - 3, -1, -3):
@@ -163,5 +111,8 @@ if __name__ == "__main__":
         number = str(sys.argv[1])
     else:
         number = str(input("Enter a number "))
-    converter = Converter(number)
-    print(converter.convert())
+    try:
+        converter = Converter(number)
+        print(converter.convert())
+    except ValueError as error:
+        print(error)
