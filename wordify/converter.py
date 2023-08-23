@@ -85,7 +85,7 @@ class Converter:
     def set_number(self, number):
         """
         Sets a new numerical value for conversion.
-        :param new_number: The new numerical value.
+        :param number: The new numerical value.
         """
         if not isinstance(number, int) and not isinstance(number, str):
             raise ValueError("Invalid input. Number must be an integer or a string.")
