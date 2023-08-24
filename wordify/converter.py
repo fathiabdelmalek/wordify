@@ -1,8 +1,4 @@
-class Converter:
-    """
-    A class for converting numerical values into their English word representation.
-    """
-
+class BaseConverter:
     _position_names = [
         "", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion", "sextillion",
         "septillion", "octillion", "nonillion", "decillion", "un-decillion", "duo-decillion",
@@ -57,17 +53,10 @@ class Converter:
         Pads the original number with leading zeros to ensure groups of three digits.
         :return: The padded number.
         """
-        print(self.original_number)
-        if not self.original_number.isdigit():
-            raise ValueError("Invalid input. Number must contain only numbers digits and negative digit.")
-        number = self.original_number
-        if self.original_number.startswith('-'):
-            self.is_negative = True
-            number = number[1:]
-        padding = (3 - len(number) % 3) % 3
-        return '0' * padding + number
+        padding = (3 - len(self.original_number) % 3) % 3
+        return '0' * padding + self.original_number
 
-    def _convert_group_to_word(self, group, is_negative=False):
+    def _convert_group_to_word(self, group):
         """
         Converts a three-digit group into its English word representation.
         :param group: The three-digit group.
@@ -87,22 +76,6 @@ class Converter:
         self._position += 1
         return res
 
-    def set_number(self, number):
-        """
-        Sets a new numerical value for conversion.
-        :param number: The new numerical value.
-        """
-        if not isinstance(number, int) and not isinstance(number, str):
-            raise ValueError("Invalid input. Number must be an integer or a string.")
-        self.original_number = str(number)
-        if self.original_number.startswith('-'):
-            self.original_number = self.original_number[1:]
-            self.is_negative = True
-        else:
-            self.is_negative = False
-        self.padded_number = self._pad_number()
-        self._position = 0
-
     def convert(self):
         """
         Converts the numerical value into its English word representation.
@@ -115,3 +88,60 @@ class Converter:
         if self.is_negative:
             result = f"negative {result}"
         return result[:-6]
+
+    def set_number(self, number):
+        """
+        Sets a new numerical value for conversion.
+        :param number: The new numerical value.
+        """
+        self._position = 0
+        self.is_negative = number < 0
+        self.original_number = str(number)
+        if self.original_number.startswith('-'):
+            self.original_number = self.original_number[1:]
+        print(self.original_number)
+        if not self.original_number.isdigit():
+            raise ValueError("Invalid input. must be a valid number.")
+        self.padded_number = self._pad_number()
+
+
+class IntegerConverter(BaseConverter):
+    def set_number(self, number):
+        if not isinstance(number, int):
+            raise TypeError("Invalid input type. Number must be an integer.")
+        super().set_number(number)
+
+
+class DecimalConverter(BaseConverter):
+    def set_number(self, number):
+        if not isinstance(number, (int, float)):
+            raise TypeError("Invalid input type. Number must be an integer or float.")
+        super().set_number(number)
+
+    def _pad_number(self):
+        if self.original_number.__contains__('.'):
+            integer_part, decimal_part = str(self.original_number).split('.')
+            integer_padding = (3 - len(integer_part) % 3) % 3
+            decimal_padding = 3 - len(decimal_part)
+            padded_integer_part = '0' * integer_padding + integer_part
+            padded_decimal_part = decimal_part + '0' * decimal_padding
+            return padded_integer_part + padded_decimal_part
+        padding = (3 - len(self.original_number) % 3) % 3
+        return '0' * padding + self.original_number
+
+        # return padded_integer_part + decimal_part
+
+    # def _convert_group_to_word(self, group):
+    #     res = ""
+    #     if group[0] != '0':
+    #         res += f"{self._names[group[0]]} hundred "
+    #     if group[1] != '0':
+    #         if group[1] != '1':
+    #             res += f"{self._names[group[1] + '0']} {self._names[group[2]]} "
+    #         else:
+    #             res += f"{self._names[group[1] + group[2]]} "
+    #     else:
+    #         res += f"{self._names[group[2]]} "
+    #     res += f"{self._position_names[self._position]} and "
+    #     self._position += 1
+    #     return res
