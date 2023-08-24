@@ -5,10 +5,10 @@ with open("README.md", "r") as fh:
 
 setup(
     name="wordify",
-    version="1.1.1",
+    version="1.2.0",
     author="Fathi Abdelmalek",
     author_email="abdelmalek.fathi.2001@gmail.com",
-    url="https://github.com/FathiMalek/wordify.git",
+    url="https://github.com/fathiabdelmalek/wordify.git",
     description="A Python module to convert numerical values into their word representation.",
     long_description=long_description,
     long_description_content_type="text/markdown",

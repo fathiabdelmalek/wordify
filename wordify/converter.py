@@ -38,7 +38,7 @@ class Converter:
         '15': 'fifteen', '14': 'fourteen', '13': 'thirteen', '12': 'twelve',
         '11': 'eleven', '10': 'ten',
         '90': 'ninety', '80': 'eighty', '70': 'seventy', '60': 'sixty', '50': 'fifty',
-        '40': 'forty', '30': 'thirty', '20': 'twenty', '0': '',
+        '40': 'forty', '30': 'thirty', '20': 'twenty',
     }
 
     def __init__(self, number=0):
@@ -46,23 +46,28 @@ class Converter:
         Initializes the OptimizedConverter instance with a given number.
         :param number: The numerical value to be converted.
         """
-        if not isinstance(number, int) and not isinstance(number, str):
-            raise ValueError("Invalid input. Number must be an integer or a string.")
-        self.original_number = str(number)
-        self.padded_number = self._pad_number()
+        self.original_number = ''
+        self.padded_number = ''
+        self.is_negative = False
         self._position = 0
+        self.set_number(number)
 
     def _pad_number(self):
         """
         Pads the original number with leading zeros to ensure groups of three digits.
         :return: The padded number.
         """
+        print(self.original_number)
         if not self.original_number.isdigit():
-            raise ValueError("Invalid input. Number must contain only digits.")
-        padding = (3 - len(self.original_number) % 3) % 3
-        return '0' * padding + self.original_number
+            raise ValueError("Invalid input. Number must contain only numbers digits and negative digit.")
+        number = self.original_number
+        if self.original_number.startswith('-'):
+            self.is_negative = True
+            number = number[1:]
+        padding = (3 - len(number) % 3) % 3
+        return '0' * padding + number
 
-    def _convert_group_to_word(self, group):
+    def _convert_group_to_word(self, group, is_negative=False):
         """
         Converts a three-digit group into its English word representation.
         :param group: The three-digit group.
@@ -90,6 +95,11 @@ class Converter:
         if not isinstance(number, int) and not isinstance(number, str):
             raise ValueError("Invalid input. Number must be an integer or a string.")
         self.original_number = str(number)
+        if self.original_number.startswith('-'):
+            self.original_number = self.original_number[1:]
+            self.is_negative = True
+        else:
+            self.is_negative = False
         self.padded_number = self._pad_number()
         self._position = 0
 
@@ -102,4 +112,6 @@ class Converter:
         for i in range(len(self.padded_number) - 3, -1, -3):
             group = self.padded_number[i:i + 3]
             result = self._convert_group_to_word(group) + result
+        if self.is_negative:
+            result = f"negative {result}"
         return result[:-6]
