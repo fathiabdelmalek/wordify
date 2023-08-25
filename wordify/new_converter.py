@@ -61,18 +61,14 @@ class ConvertBehavior:
         return self._names[str(number)]
 
     def convert(self, number, is_negative=False):
-        result = ""
-        for i in range(len(number) - 3, -1, -3):
-            group = number[i:i + 3]
-            result = self._convert_group_to_word(group) + result
-        if is_negative:
-            result = f"negative {result}"
-        return result[:-6]
+        pass
 
-    def convert_to_tokens(self, number, is_negative=False):
+
+class TokenConverter(ConvertBehavior):
+    def convert(self, number, is_negative=False):
         result = ""
-        for i in number:
-            result += f"{self._convert_to_token(i)} "
+        for n in number:
+            result += f"{self._convert_to_token(n)} "
         while result.startswith("zero "):
             result = result[5:]
         if is_negative:
@@ -80,18 +76,8 @@ class ConvertBehavior:
         return result[:-1]
 
 
-class TokenConverter(ConvertBehavior):
-    def convert(self, number, is_negative):
-        result = ""
-        for n in number:
-            result += f"{self._convert_to_token(n)} "
-        if is_negative:
-            result = f"negative {result}"
-        return result[:-1]
-
-
 class IntegerConverter(ConvertBehavior):
-    def convert(self, number, is_negative):
+    def convert(self, number, is_negative=False):
         result = ""
         for i in range(len(number) - 3, -1, -3):
             group = number[i:i + 3]
@@ -102,8 +88,7 @@ class IntegerConverter(ConvertBehavior):
 
 
 class DecimalConverter(ConvertBehavior):
-    def convert(self, number, is_negative):
-        # result = super().convert(number)
+    def convert(self, number, is_negative=False):
         decimal_part = None
         if '.' in number:
             integer_part, decimal_part = str(number).split('.')
@@ -114,10 +99,13 @@ class DecimalConverter(ConvertBehavior):
             group = integer_part[i:i + 3]
             result = self._convert_group_to_word(group) + result
         if decimal_part:
-            result = f"{result[:-6]} point {self._convert_to_token(decimal_part)}"
+            result = f"{result[:-6]} point"
+            for n in decimal_part:
+                result += f" {self._convert_to_token(n)}"
+            return result
         if is_negative:
             result = f"negative {result}"
-        return result
+        return result[:-6]
 
 
 class NumberHandler:
@@ -147,13 +135,14 @@ class NumberHandler:
         return self.converter.convert(self.padded_number, self.is_negative)
 
     def convert_to_tokens(self):
-        return self.converter.convert_to_tokens(self.padded_number, self.is_negative)
+        self.converter = TokenConverter()
+        return self.converter.convert(self.padded_number, self.is_negative)
 
 
 class IntegerNumber(NumberHandler):
     def __init__(self):
         super().__init__(IntegerConverter())
-        # self.converter = IntegerConverter()
+
     def set_number(self, number):
         if not isinstance(number, int):
             raise TypeError("Invalid input type. Number must be an integer.")
@@ -163,20 +152,8 @@ class IntegerNumber(NumberHandler):
 class DecimalNumber(NumberHandler):
     def __init__(self):
         super().__init__(DecimalConverter())
-        # self._padded_integer_part = ''
-        self.integer_part = ''
-        self.decimal_part = ''
-        self.converter = DecimalConverter()
 
     def set_number(self, number):
         if not isinstance(number, (int, float)):
             raise TypeError("Invalid input type. Number must be an integer or float.")
         super().set_number(number)
-
-    def _pad_number(self):
-        if '.' in self.original_number:
-            self.integer_part, self.decimal_part = str(self.original_number).split('.')
-        else:
-            self.integer_part = str(self.original_number)
-        padding = (3 - len(self.integer_part) % 3) % 3
-        return '0' * padding + self.integer_part

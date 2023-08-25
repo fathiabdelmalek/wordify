@@ -112,10 +112,10 @@ class BaseConverter:
         :return: The token representation of the numerical value.
         """
         result = ""
-        for i in self.original_number:
-            result += f"{self._convert_to_token(i)} "
-        # while result.startswith("zero "):
-        #     result = result[5:]
+        for n in self.original_number:
+            result += f"{self._convert_to_token(n)} "
+        if self.is_negative:
+            result = f"negative {result}"
         return result[:-1]
 
 
