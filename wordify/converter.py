@@ -45,7 +45,7 @@ class BaseConverter:
         self.original_number = ''
         self.padded_number = ''
         self.is_negative = False
-        self._position = 0
+        self.position = 0
         self.set_number(number)
 
     def _pad_number(self):
@@ -72,9 +72,30 @@ class BaseConverter:
                 res += f"{self._names[group[1]+group[2]]} "
         else:
             res += f"{self._names[group[2]]} "
-        res += f"{self._position_names[self._position]} and "
-        self._position += 1
+        res += f"{self._position_names[self.position]} and "
+        self.position += 1
         return res
+
+    def _convert_to_token(self, number):
+        result = ""
+        for i in number:
+            if i == '0':
+                result += 'zero '
+            else:
+                result += f"{self._names[str(i)]} "
+        return result[:-1]
+
+    def set_number(self, number):
+        """
+        Sets a new numerical value for conversion.
+        :param number: The new numerical value.
+        """
+        self.position = 0
+        self.is_negative = number < 0
+        self.original_number = str(number)
+        if self.original_number.startswith('-'):
+            self.original_number = self.original_number[1:]
+        self.padded_number = self._pad_number()
 
     def convert(self):
         """
@@ -89,20 +110,8 @@ class BaseConverter:
             result = f"negative {result}"
         return result[:-6]
 
-    def set_number(self, number):
-        """
-        Sets a new numerical value for conversion.
-        :param number: The new numerical value.
-        """
-        self._position = 0
-        self.is_negative = number < 0
-        self.original_number = str(number)
-        if self.original_number.startswith('-'):
-            self.original_number = self.original_number[1:]
-        print(self.original_number)
-        if not self.original_number.isdigit():
-            raise ValueError("Invalid input. must be a valid number.")
-        self.padded_number = self._pad_number()
+    def convert_to_tokens(self):
+        return self._convert_to_token(self.original_number)
 
 
 class IntegerConverter(BaseConverter):
@@ -113,6 +122,11 @@ class IntegerConverter(BaseConverter):
 
 
 class DecimalConverter(BaseConverter):
+    def __init__(self):
+        self._padded_integer_part = ''
+        self.integer_part = ''
+        self.decimal_part = ''
+
     def set_number(self, number):
         if not isinstance(number, (int, float)):
             raise TypeError("Invalid input type. Number must be an integer or float.")
@@ -120,28 +134,14 @@ class DecimalConverter(BaseConverter):
 
     def _pad_number(self):
         if self.original_number.__contains__('.'):
-            integer_part, decimal_part = str(self.original_number).split('.')
-            integer_padding = (3 - len(integer_part) % 3) % 3
-            decimal_padding = 3 - len(decimal_part)
-            padded_integer_part = '0' * integer_padding + integer_part
-            padded_decimal_part = decimal_part + '0' * decimal_padding
-            return padded_integer_part + padded_decimal_part
-        padding = (3 - len(self.original_number) % 3) % 3
-        return '0' * padding + self.original_number
+            self.integer_part, self.decimal_part = str(self.original_number).split('.')
+        else:
+            self.integer_part = str(self.original_number)
+        padding = (3 - len(self.integer_part) % 3) % 3
+        return '0' * padding + self.integer_part
 
-        # return padded_integer_part + decimal_part
-
-    # def _convert_group_to_word(self, group):
-    #     res = ""
-    #     if group[0] != '0':
-    #         res += f"{self._names[group[0]]} hundred "
-    #     if group[1] != '0':
-    #         if group[1] != '1':
-    #             res += f"{self._names[group[1] + '0']} {self._names[group[2]]} "
-    #         else:
-    #             res += f"{self._names[group[1] + group[2]]} "
-    #     else:
-    #         res += f"{self._names[group[2]]} "
-    #     res += f"{self._position_names[self._position]} and "
-    #     self._position += 1
-    #     return res
+    def convert(self):
+        result = super().convert()
+        if self.original_number.__contains__('.'):
+            result += f" point {self._convert_to_token(self.decimal_part)}"
+        return result
