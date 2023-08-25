@@ -1,4 +1,4 @@
-class BaseConverter:
+class ConvertBehavior:
     _position_names = [
         "", "thousand", "million", "billion", "trillion", "quadrillion", "quintillion", "sextillion",
         "septillion", "octillion", "nonillion", "decillion", "un-decillion", "duo-decillion",
@@ -37,31 +37,10 @@ class BaseConverter:
         '40': 'forty', '30': 'thirty', '20': 'twenty',
     }
 
-    def __init__(self, number=0):
-        """
-        Initializes the OptimizedConverter instance with a given number.
-        :param number: The numerical value to be converted.
-        """
-        self.original_number = ''
-        self.padded_number = ''
-        self.is_negative = False
+    def __init__(self):
         self.position = 0
-        self.set_number(number)
-
-    def _pad_number(self):
-        """
-        Pads the original number with leading zeros to ensure groups of three digits.
-        :return: The padded number.
-        """
-        padding = (3 - len(self.original_number) % 3) % 3
-        return '0' * padding + self.original_number
 
     def _convert_group_to_word(self, group):
-        """
-        Converts a three-digit group into its English word representation.
-        :param group: The three-digit group.
-        :return: The English word representation of the group.
-        """
         res = ""
         if group[0] != '0':
             res += f"{self._names[group[0]]} hundred "
@@ -81,12 +60,83 @@ class BaseConverter:
             return 'zero'
         return self._names[str(number)]
 
+    def convert(self, number, is_negative=False):
+        result = ""
+        for i in range(len(number) - 3, -1, -3):
+            group = number[i:i + 3]
+            result = self._convert_group_to_word(group) + result
+        if is_negative:
+            result = f"negative {result}"
+        return result[:-6]
+
+    def convert_to_tokens(self, number, is_negative=False):
+        result = ""
+        for i in number:
+            result += f"{self._convert_to_token(i)} "
+        while result.startswith("zero "):
+            result = result[5:]
+        if is_negative:
+            result = f"negative {result}"
+        return result[:-1]
+
+
+class TokenConverter(ConvertBehavior):
+    def convert(self, number, is_negative):
+        result = ""
+        for n in number:
+            result += f"{self._convert_to_token(n)} "
+        if is_negative:
+            result = f"negative {result}"
+        return result[:-1]
+
+
+class IntegerConverter(ConvertBehavior):
+    def convert(self, number, is_negative):
+        result = ""
+        for i in range(len(number) - 3, -1, -3):
+            group = number[i:i + 3]
+            result = self._convert_group_to_word(group) + result
+        if is_negative:
+            result = f"negative {result}"
+        return result[:-6]
+
+
+class DecimalConverter(ConvertBehavior):
+    def convert(self, number, is_negative):
+        # result = super().convert(number)
+        decimal_part = None
+        if '.' in number:
+            integer_part, decimal_part = str(number).split('.')
+        else:
+            integer_part = str(number)
+        result = ""
+        for i in range(len(integer_part) - 3, -1, -3):
+            group = integer_part[i:i + 3]
+            result = self._convert_group_to_word(group) + result
+        if decimal_part:
+            result = f"{result[:-6]} point {self._convert_to_token(decimal_part)}"
+        if is_negative:
+            result = f"negative {result}"
+        return result
+
+
+class NumberHandler:
+    def __init__(self, converter, number=0):
+        self.original_number = ''
+        self.padded_number = ''
+        self.is_negative = False
+        self.converter = converter
+        self.set_number(number)
+
+    def set_converter(self, converter):
+        self.converter = converter
+
+    def _pad_number(self):
+        padding = (3 - len(self.original_number) % 3) % 3
+        return '0' * padding + self.original_number
+
     def set_number(self, number):
-        """
-        Sets a new numerical value for conversion.
-        :param number: The new numerical value.
-        """
-        self.position = 0
+        self.converter.position = 0
         self.is_negative = number < 0
         self.original_number = str(number)
         if self.original_number.startswith('-'):
@@ -94,43 +144,29 @@ class BaseConverter:
         self.padded_number = self._pad_number()
 
     def convert(self):
-        """
-        Converts the numerical value into its English word representation.
-        :return: The English word representation of the numerical value.
-        """
-        result = ""
-        for i in range(len(self.padded_number) - 3, -1, -3):
-            group = self.padded_number[i:i + 3]
-            result = self._convert_group_to_word(group) + result
-        if self.is_negative:
-            result = f"negative {result}"
-        return result[:-6]
+        return self.converter.convert(self.padded_number, self.is_negative)
 
     def convert_to_tokens(self):
-        """
-        Converts the numerical value to its token representation.
-        :return: The token representation of the numerical value.
-        """
-        result = ""
-        for i in self.original_number:
-            result += f"{self._convert_to_token(i)} "
-        # while result.startswith("zero "):
-        #     result = result[5:]
-        return result[:-1]
+        return self.converter.convert_to_tokens(self.padded_number, self.is_negative)
 
 
-class IntegerConverter(BaseConverter):
+class IntegerNumber(NumberHandler):
+    def __init__(self):
+        super().__init__(IntegerConverter())
+        # self.converter = IntegerConverter()
     def set_number(self, number):
         if not isinstance(number, int):
             raise TypeError("Invalid input type. Number must be an integer.")
         super().set_number(number)
 
 
-class DecimalConverter(BaseConverter):
+class DecimalNumber(NumberHandler):
     def __init__(self):
-        self._padded_integer_part = ''
+        super().__init__(DecimalConverter())
+        # self._padded_integer_part = ''
         self.integer_part = ''
         self.decimal_part = ''
+        self.converter = DecimalConverter()
 
     def set_number(self, number):
         if not isinstance(number, (int, float)):
@@ -144,11 +180,3 @@ class DecimalConverter(BaseConverter):
             self.integer_part = str(self.original_number)
         padding = (3 - len(self.integer_part) % 3) % 3
         return '0' * padding + self.integer_part
-
-    def convert(self):
-        result = super().convert()
-        if '.' in self.original_number:
-            result += " point"
-            for n in self.decimal_part:
-                result += f" {self._convert_to_token(n)}"
-        return result
