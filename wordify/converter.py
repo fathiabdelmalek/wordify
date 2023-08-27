@@ -79,7 +79,7 @@ class BaseConverter:
     def _convert_to_token(self, number):
         if number == '0':
             return 'zero'
-        if number == 'point':
+        if number == '.':
             return 'point'
         return self._names[str(number)]
 

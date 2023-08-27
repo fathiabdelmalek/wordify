@@ -25,8 +25,8 @@ Wordify is a Python class that converts a given number into its word representat
 
 4. Print the word representation.
    ```python
-    print(int_word_representation)
-    print(dec_word_representation)
+    print(int_word_representation)  # output: twelve thousand and three hundred forty five
+    print(dec_word_representation)  # output: one hundred twenty three point four five
    ```
 
 ## Example
@@ -42,7 +42,7 @@ converter = IntegerConverter(number)
 word_representation = converter.convert()
 
 # Print the word representation
-print(word_representation) # Output : twelve thousand and three hundred forty five
+print(word_representation)   # output: twelve thousand and three hundred forty five
 ```
 
 ## Customization
