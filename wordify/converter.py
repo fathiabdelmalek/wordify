@@ -79,6 +79,8 @@ class BaseConverter:
     def _convert_to_token(self, number):
         if number == '0':
             return 'zero'
+        if number == 'point':
+            return 'point'
         return self._names[str(number)]
 
     def set_number(self, number):
@@ -127,7 +129,8 @@ class IntegerConverter(BaseConverter):
 
 
 class DecimalConverter(BaseConverter):
-    def __init__(self):
+    def __init__(self, number=0):
+        super().__init__(number)
         self._padded_integer_part = ''
         self.integer_part = ''
         self.decimal_part = ''

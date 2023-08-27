@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="wordify",
-    version="1.3.0",
+    version="1.4.0",
     author="Fathi Abdelmalek",
     author_email="abdelmalek.fathi.2001@gmail.com",
     url="https://github.com/fathiabdelmalek/wordify.git",

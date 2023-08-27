@@ -3,35 +3,40 @@ Wordify is a Python class that converts a given number into its word representat
 
 ## Usage
 
-1. Import the `Converter` class
-    ```python
-   from wordify.converter import Converter
+1. From `converter` import the needed class (you have `IntegerConverter` and `DecimalConverter`)
+   ```python
+   from wordify.converter import IntegerConverter
+   from wordify.converter import DecimalConverter
    ```
 
 2. Create an instance of the `Converter` class by providing a number to be converted.
-    ```python
-    number = "12345"
-    converter = Converter(number)
-    ```
+   ```python
+   int_number = 12345
+   int_converter = IntegerConverter(int_number)
+   dec_number = 123.45
+   dec_converter = DecimalConverter(dec_number)
+   ```
 
 3. Convert the number to its word representation using the `convert` method.
-    ```python
-    word_representation = converter.convert()
-    ```
+   ```python
+   int_word_representation = int_converter.convert()
+   dec_word_representation = dec_converter.convert()
+   ```
 
 4. Print the word representation.
-    ```python
-    print(word_representation)
-    ```
+   ```python
+    print(int_word_representation)
+    print(dec_word_representation)
+   ```
 
 ## Example
 
 ```python
-from converter import Converter
+from converter import IntegerConverter
 
 # Create a Converter instance with a number
-number = "12345"
-converter = Converter(number)
+number = 12345
+converter = IntegerConverter(number)
 
 # Convert the number to words
 word_representation = converter.convert()
@@ -43,9 +48,9 @@ print(word_representation) # Output : twelve thousand and three hundred forty fi
 ## Customization
 
 You can set a new number for conversion using the `set_number` method.
-```python
-converter.set_number("987654321")
-```
+   ```python
+   converter.set_number(98765)
+   ```
 After setting the new number, you need to call the `convert` method again to obtain the word representation.
 
 ## License
