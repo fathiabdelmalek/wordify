@@ -130,10 +130,10 @@ class IntegerConverter(BaseConverter):
 
 class DecimalConverter(BaseConverter):
     def __init__(self, number=0):
-        super().__init__(number)
         self._padded_integer_part = ''
         self.integer_part = ''
         self.decimal_part = ''
+        super().__init__(number)
 
     def set_number(self, number):
         if not isinstance(number, (int, float)):
